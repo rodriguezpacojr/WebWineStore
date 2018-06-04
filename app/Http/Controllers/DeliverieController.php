@@ -45,6 +45,46 @@ class DeliverieController extends Controller
 
     public function edit($id)
     {
+        //Send Notification
+        function enviar($tokens,$mensaje)
+        {
+            $url = 'https://fcm.googleapis.com/fcm/send';
+            $fields = array(
+                'registration_ids'=>$tokens,
+                'data'=>$mensaje
+            );
+
+            $headers = array(
+                'Authorization:key=AIzaSyAjRf57mAx93rOEWFjmfMWPUbSCf_PZCOY',
+                'Content-Type:application/json'
+            );
+
+            $push = curl_init();
+            curl_setopt($push, CURLOPT_URL, $url);
+            curl_setopt($push, CURLOPT_POST, true);
+            curl_setopt($push, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($push, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($push, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($push, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($push, CURLOPT_POSTFIELDS, json_encode($fields));
+            $result = curl_exec($push);
+
+            if( $result === FALSE )
+            {
+                die('El envio de la notifiacion PUSH fallo'.curl_error($push));
+            }
+
+            curl_close($push);
+
+            return $result;
+        }
+
+        $tokens = array();
+        $tokens[0] = "d1J89ULGQao:APA91bF-BHIjoXZFSyV9P-Bgy6GqSgsl1TCTwpLNAv9aUmV6MTIuHDMczSgfO7AnXJ7t0ZaKOcaSzXYLFFZHj-tmb349h05G_z50UXrabrres34kGtTnIwmri1kqM8jo9eciW75dwqln";
+        $mensajes = array("message" => "Your Order has been delivered" );
+        $estatus = enviar($tokens,$mensajes);
+
+
         $client = new Client(['base_uri' => Config::get('auth._HOST').'IosAnd/api/']);
         $response = $client->request('GET', 'orderdetail/orderdetail/'.$id.'/'.$_SESSION['token'], ['auth' => ['root', 'root']]);
 
